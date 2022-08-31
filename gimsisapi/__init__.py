@@ -1,1 +1,1 @@
-from .gimsisapi import GimSisAPI, make_markdown_table
+from .gimsisapi import GimSisAPI
