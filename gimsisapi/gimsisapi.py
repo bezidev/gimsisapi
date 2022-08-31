@@ -4,14 +4,6 @@ from gimsisapi.formtagparser import get_class, get_days, get_tags
 
 ZGIMSIS_URI = "https://zgimsis.gimb.org/"
 
-DAYS = {
-    0: "PON",
-    1: "TOR",
-    2: "SRE",
-    3: "ČET",
-    4: "PET",
-}
-
 class GimSisAPI():
     def __init__(self, username, password):
         self.client = httpx.AsyncClient()
