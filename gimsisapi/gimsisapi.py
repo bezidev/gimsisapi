@@ -1,4 +1,3 @@
-from datetime import datetime
 import httpx
 
 from gimsisapi.formtagparser import get_class, get_days, get_tags
