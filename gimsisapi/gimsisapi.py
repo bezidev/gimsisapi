@@ -1,10 +1,13 @@
+from datetime import datetime
+
 import httpx
 
-from gimsisapi.formtagparser import get_class, get_days, get_tags
+from gimsisapi.formtagparser import get_class, get_days, get_tags, get_absences
 
 ZGIMSIS_URI = "https://zgimsis.gimb.org/"
 
-class GimSisAPI():
+
+class GimSisAPI:
     def __init__(self, username, password):
         self.client = httpx.AsyncClient()
         self.username = username
@@ -28,9 +31,34 @@ class GimSisAPI():
 
         await self.client.get(f"{ZGIMSIS_URI}Default.aspx")
     
-    async def fetch_timetable(self, date: str = None):
-        await self.login()
+    async def fetch_absences(
+            self,
+            from_date: str,
+            to_date: str = datetime.now().strftime("%d.%m.%Y"),
+            solsko_leto: str = str(datetime.now().year),
+            ni_obdelano: bool = True,
+            opraviceno: bool = True,
+            neopraviceno: bool = True,
+            ne_steje: bool = True
+    ):
+        data = {
+            "ctl00$ContentPlaceHolder1$ddlIdSolskoleto": solsko_leto,
+            "ctl00$ContentPlaceHolder1$edtDatZacetka": from_date,
+            "ctl00$ContentPlaceHolder1$edtDatKonca": to_date,
+            "ctl00$ContentPlaceHolder1$cbxStatusNiObdelano": "on" if ni_obdelano else "off",
+            "ctl00$ContentPlaceHolder1$cbxStatusOpraviceno": "on" if opraviceno else "off",
+            "ctl00$ContentPlaceHolder1$cbxStatusNeopraviceno": "on" if neopraviceno else "off",
+            "ctl00$ContentPlaceHolder1$cbxStatusNeSteje": "on" if ne_steje else "off",
+            "": "",
+        }
 
+        g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/IzostankiUcenec.aspx")
+        data.update(get_tags(g.text))
+
+        r = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/IzostankiUcenec.aspx", data=data)
+        return get_absences(r.text)
+
+    async def fetch_timetable(self, date: str = None):
         data = {}
 
         if date:
@@ -43,7 +71,7 @@ class GimSisAPI():
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/DnevnikUcenec.aspx")
         data.update(get_tags(g.text))
 
-        #print(data)
+        # print(data)
 
         r = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/DnevnikUcenec.aspx", data=data)
         classes = get_class(r.text)

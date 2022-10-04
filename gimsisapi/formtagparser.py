@@ -2,12 +2,14 @@ import re
 
 from bs4 import BeautifulSoup
 
+
 def get_tags(text):
     soup = BeautifulSoup(text, "html.parser")
     m = {}
     for i in soup.find_all("input", type="hidden"):
         m[i.attrs["name"]] = i.attrs["value"]
     return m
+
 
 class GimSisUra:
     def __init__(self, ura, dan, ime, kratko_ime, razred, profesor, ucilnica, dnevniski_zapis, vpisano_nadomescanje):
@@ -26,6 +28,23 @@ class GimSisUra:
 
     def __str__(self):
         return f"GimSisUra({self.ura}, {self.dan}, {self.ime}, {self.kratko_ime}, {self.razred}, {self.profesor}, {self.ucilnica}, {self.dnevniski_zapis}, {self.vpisano_nadomescanje})"
+
+
+class SubjectAbsence:
+    def __init__(self, predmet, ni_obdelano: int, opraviceno: int, neopraviceno: int, ne_steje: int, skupaj: int):
+        self.predmet = predmet
+        self.ni_obdelano = ni_obdelano
+        self.opraviceno = opraviceno
+        self.neopraviceno = neopraviceno
+        self.ne_steje = ne_steje
+        self.skupaj = skupaj
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"SubjectAbsence({self.predmet}, {self.ni_obdelano}, {self.opraviceno}, {self.neopraviceno}, {self.ne_steje}, {self.skupaj})"
+
 
 def get_class(text):
     soup = BeautifulSoup(text, "html.parser")
@@ -50,6 +69,7 @@ def get_class(text):
 
     return m
 
+
 def get_days(text):
     soup = BeautifulSoup(text, "html.parser")
     days = []
@@ -61,3 +81,21 @@ def get_days(text):
         if re.match(r".*, .*", t):
             days.append(f.text.split(" ")[1])
     return days
+
+
+def get_absences(text):
+    soup = BeautifulSoup(text, "html.parser")
+    absences = []
+    for i in soup.find("table", id="ctl00_ContentPlaceHolder1_gvwPregledIzostankovPredmeti").find("tbody").find_all("tr"):
+        f = i.find_all("td")
+        absences.append(
+            SubjectAbsence(
+                f[0].text.strip(),
+                int(0 if f[1].text.strip() == "" else f[1].text.strip()),
+                int(0 if f[2].text.strip() == "" else f[2].text.strip()),
+                int(0 if f[3].text.strip() == "" else f[3].text.strip()),
+                int(0 if f[4].text.strip() == "" else f[4].text.strip()),
+                int(0 if f[5].text.strip() == "" else f[5].text.strip()),
+            ),
+        )
+    return absences
