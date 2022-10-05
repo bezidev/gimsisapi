@@ -81,7 +81,7 @@ class GimSisAPI:
 
         return classes, days
     
-    async def fetch_gradings(self, date: str = None):
+    async def fetch_gradings(self):
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/IzpitiUcenec.aspx")
         return get_gradings(g.text)
             
