@@ -1,8 +1,9 @@
 from datetime import datetime
+from gimsisapi.constants import AbsenceType
 
 import httpx
 
-from gimsisapi.formtagparser import get_class, get_days, get_tags, get_absences
+from gimsisapi.formtagparser import get_class, get_days, get_gradings, get_tags, get_absences
 
 ZGIMSIS_URI = "https://zgimsis.gimb.org/"
 
@@ -39,7 +40,8 @@ class GimSisAPI:
             ni_obdelano: bool = True,
             opraviceno: bool = True,
             neopraviceno: bool = True,
-            ne_steje: bool = True
+            ne_steje: bool = True,
+            type: int = AbsenceType.by_subjects,
     ):
         data = {
             "ctl00$ContentPlaceHolder1$ddlIdSolskoleto": solsko_leto,
@@ -56,7 +58,7 @@ class GimSisAPI:
         data.update(get_tags(g.text))
 
         r = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/IzostankiUcenec.aspx", data=data)
-        return get_absences(r.text)
+        return get_absences(r.text, type)
 
     async def fetch_timetable(self, date: str = None):
         data = {}
@@ -78,4 +80,8 @@ class GimSisAPI:
         days = get_days(r.text)
 
         return classes, days
+    
+    async def fetch_gradings(self, date: str = None):
+        g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/IzpitiUcenec.aspx")
+        return get_gradings(g.text)
             

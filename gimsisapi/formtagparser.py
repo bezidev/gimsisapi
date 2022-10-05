@@ -1,6 +1,9 @@
 import re
+from typing import List
 
 from bs4 import BeautifulSoup
+
+from gimsisapi.constants import AbsenceType
 
 
 def get_tags(text):
@@ -46,6 +49,34 @@ class SubjectAbsence:
         return f"SubjectAbsence({self.predmet}, {self.ni_obdelano}, {self.opraviceno}, {self.neopraviceno}, {self.ne_steje}, {self.skupaj})"
 
 
+class SubjectAbsenceStatus:
+    def __init__(self, ura: int, predmet: str, napovedano: bool, status: str, opomba: str):
+        self.ura = ura
+        self.predmet = predmet
+        self.napovedano = napovedano
+        self.status = status
+        self.opomba = opomba
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"SubjectAbsenceStatus({self.ura}, {self.predmet}, {self.napovedano}, {self.status}, {self.opomba})"
+
+
+class Grading:
+    def __init__(self, datum: str, predmet: str, opis: str):
+        self.datum = datum
+        self.predmet = predmet
+        self.opis = opis
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"Grading({self.datum}, {self.predmet}, {self.opis})"
+
+
 def get_class(text):
     soup = BeautifulSoup(text, "html.parser")
     m = {0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}}
@@ -83,19 +114,56 @@ def get_days(text):
     return days
 
 
-def get_absences(text):
+def get_absences(text, type: int):
     soup = BeautifulSoup(text, "html.parser")
     absences = []
-    for i in soup.find("table", id="ctl00_ContentPlaceHolder1_gvwPregledIzostankovPredmeti").find("tbody").find_all("tr"):
+    if type == AbsenceType.by_subjects:
+        for i in soup.find("table", id="ctl00_ContentPlaceHolder1_gvwPregledIzostankovPredmeti").find("tbody").find_all("tr"):
+            f = i.find_all("td")
+            absences.append(
+                SubjectAbsence(
+                    f[0].text.strip(),
+                    int(0 if f[1].text.strip() == "" else f[1].text.strip()),
+                    int(0 if f[2].text.strip() == "" else f[2].text.strip()),
+                    int(0 if f[3].text.strip() == "" else f[3].text.strip()),
+                    int(0 if f[4].text.strip() == "" else f[4].text.strip()),
+                    int(0 if f[5].text.strip() == "" else f[5].text.strip()),
+                ),
+            )
+        return absences
+    elif type == AbsenceType.by_days:
+        current_day = ""
+        days = {}
+        for i in soup.find("table", id="ctl00_ContentPlaceHolder1_gvwPregledIzostankov").find("tbody").find_all("tr"):
+            f = i.find_all("td")
+            if re.match(r"(.*)\.(.*)\.(.*)", f[0].text.strip()) is not None:
+                current_day = f[0].text.strip()
+                days[current_day] = []
+                f = f[1:]
+            
+            days[current_day].append(
+                SubjectAbsenceStatus(
+                    int(f[0].text.strip()),
+                    f[1].text.strip(),
+                    f[2].text.strip(),
+                    f[3].find("div").text.strip(),
+                    f[4].text.strip(),
+                ),
+            )
+        return days
+    raise Exception("Unimplemented")
+
+
+def get_gradings(text):
+    soup = BeautifulSoup(text, "html.parser")
+    gradings = []
+    for i in soup.find("table", id="ctl00_ContentPlaceHolder1_gvwUcenecIzpiti").find("tbody").find_all("tr"):
         f = i.find_all("td")
-        absences.append(
-            SubjectAbsence(
+        gradings.append(
+            Grading(
                 f[0].text.strip(),
-                int(0 if f[1].text.strip() == "" else f[1].text.strip()),
-                int(0 if f[2].text.strip() == "" else f[2].text.strip()),
-                int(0 if f[3].text.strip() == "" else f[3].text.strip()),
-                int(0 if f[4].text.strip() == "" else f[4].text.strip()),
-                int(0 if f[5].text.strip() == "" else f[5].text.strip()),
+                f[1].contents[1].text.strip(),
+                f[1].contents[2].text.strip(),
             ),
         )
-    return absences
+    return gradings
