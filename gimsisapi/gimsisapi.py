@@ -3,7 +3,7 @@ from gimsisapi.constants import AbsenceType
 
 import httpx
 
-from gimsisapi.formtagparser import get_class, get_days, get_gradings, get_tags, get_absences
+from gimsisapi.formtagparser import get_class, get_days, get_gradings, get_tags, get_absences, get_grades
 
 ZGIMSIS_URI = "https://zgimsis.gimb.org/"
 
@@ -15,7 +15,7 @@ class GimSisAPI:
         self.password = password
         if not username or not password:
             raise Exception("Invalid login credentials")
-    
+
     async def login(self):
         data = {
             "edtGSEUserId": self.username,
@@ -31,7 +31,7 @@ class GimSisAPI:
             raise Exception("Failed while logging in")
 
         await self.client.get(f"{ZGIMSIS_URI}Default.aspx")
-    
+
     async def fetch_absences(
             self,
             from_date: str,
@@ -80,8 +80,11 @@ class GimSisAPI:
         days = get_days(r.text)
 
         return classes, days
-    
+
     async def fetch_gradings(self):
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/IzpitiUcenec.aspx")
         return get_gradings(g.text)
-            
+
+    async def fetch_grades(self):
+        g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/OceneUcenec.aspx")
+        return get_grades(g.text)

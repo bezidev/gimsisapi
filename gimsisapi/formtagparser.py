@@ -77,6 +77,24 @@ class Grading:
         return f"Grading({self.datum}, {self.predmet}, {self.opis})"
 
 
+class Grade:
+    def __init__(self, ocena: str, datum: str, ucitelj: str, predmet: str, tip: str, opis_ocenjevanja: str, rok: str, je_zakljucena: bool):
+        self.ocena = ocena
+        self.datum = datum
+        self.ucitelj = ucitelj
+        self.predmet = predmet
+        self.tip = tip
+        self.opis_ocenjevanja = opis_ocenjevanja
+        self.rok = rok
+        self.je_zakljucena = je_zakljucena
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"Grading({self.datum}, {self.ucitelj}, {self.predmet}, {self.tip}, {self.opis_ocenjevanja}, {self.rok}, {self.je_zakljucena})"
+
+
 def get_class(text):
     soup = BeautifulSoup(text, "html.parser")
     m = {0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}}
@@ -166,4 +184,40 @@ def get_gradings(text):
                 f[1].contents[2].text.strip(),
             ),
         )
+    return gradings
+
+
+def get_grades(text):
+    soup = BeautifulSoup(text, "html.parser")
+    gradings = []
+    table = soup.find("table", {"class": "tabelaUrnik"})
+    if not table:
+        return {}
+    for i in table.find("tbody").find_all("tr"):
+        subject = i.find("th")
+        f = i.find_all("td")
+        subject_grades = {"name": subject.find("b").text.strip(), 0: [], 1: [], 2: [], 3: []}
+        for k, n in enumerate(f):
+            for g in n.find_all("div"):
+                grade = g.find("span").find("span").find("span")
+                title = grade["title"].strip().splitlines()
+                datum = title[0].replace("Ocena: ", "").strip()
+                ucitelj = title[1].replace("Učitelj: ", "").strip()
+                predmet = title[2].replace("Predmet: ", "").strip()
+                ocenjevanje = title[3].replace("Ocenjevanje: ", "").strip()
+                vrsta = title[4].replace("Vrsta: ", "").strip()
+                rok = title[5].replace("Rok: ", "").strip()
+                subject_grades[k].append(
+                    Grade(
+                        grade.text.strip(),
+                        datum,
+                        ucitelj,
+                        predmet,
+                        ocenjevanje,
+                        vrsta,
+                        rok,
+                        "ocVmesna" not in grade["class"],
+                    ),
+                )
+        gradings.append(subject_grades)
     return gradings
