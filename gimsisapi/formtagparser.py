@@ -196,8 +196,17 @@ def get_grades(text):
     for i in table.find("tbody").find_all("tr"):
         subject = i.find("th")
         f = i.find_all("td")
-        subject_grades = {"name": subject.find("b").text.strip(), 0: [], 1: [], 2: [], 3: []}
+        subject_grades = {
+            "name": subject.find("b").text.strip(),
+            "average": 0.0,
+            0: {"average": 0.0, "grades": []},
+            1: {"average": 0.0, "grades": []},
+            2: {"average": 0.0, "grades": []},
+            3: {"average": 0.0, "grades": []},
+        }
+        total_all = 0
         for k, n in enumerate(f):
+            total = 0
             for g in n.find_all("div"):
                 grade = g.find("span").find("span").find("span")
                 title = grade["title"].strip().splitlines()
@@ -207,9 +216,10 @@ def get_grades(text):
                 ocenjevanje = title[3].replace("Ocenjevanje: ", "").strip()
                 vrsta = title[4].replace("Vrsta: ", "").strip()
                 rok = title[5].replace("Rok: ", "").strip()
-                subject_grades[k].append(
+                g = grade.text.strip()
+                subject_grades[k]["grades"].append(
                     Grade(
-                        grade.text.strip(),
+                        g,
                         datum,
                         ucitelj,
                         predmet,
@@ -219,5 +229,13 @@ def get_grades(text):
                         "ocVmesna" not in grade["class"],
                     ),
                 )
+                total += int(g)
+            total_len = len(subject_grades[k]["grades"])
+            if total_len != 0:
+                subject_grades[k]["average"] = total/total_len
+            total_all += total
+        full_total_len = len(subject_grades[0]["grades"]) + len(subject_grades[1]["grades"]) + len(subject_grades[2]["grades"]) + len(subject_grades[3]["grades"])
+        if full_total_len != 0:
+            subject_grades["average"] = total_all/full_total_len
         gradings.append(subject_grades)
     return gradings
