@@ -47,12 +47,17 @@ class GimSisAPI:
             "ctl00$ContentPlaceHolder1$ddlIdSolskoleto": solsko_leto,
             "ctl00$ContentPlaceHolder1$edtDatZacetka": from_date,
             "ctl00$ContentPlaceHolder1$edtDatKonca": to_date,
-            "ctl00$ContentPlaceHolder1$cbxStatusNiObdelano": "on" if ni_obdelano else "off",
-            "ctl00$ContentPlaceHolder1$cbxStatusOpraviceno": "on" if opraviceno else "off",
-            "ctl00$ContentPlaceHolder1$cbxStatusNeopraviceno": "on" if neopraviceno else "off",
-            "ctl00$ContentPlaceHolder1$cbxStatusNeSteje": "on" if ne_steje else "off",
             "": "",
         }
+
+        if ni_obdelano:
+            data["ctl00$ContentPlaceHolder1$cbxStatusNiObdelano"] = "on"
+        if opraviceno:
+            data["ctl00$ContentPlaceHolder1$cbxStatusOpraviceno"] = "on"
+        if neopraviceno:
+            data["ctl00$ContentPlaceHolder1$cbxStatusNeopraviceno"] = "on"
+        if ne_steje:
+            data["ctl00$ContentPlaceHolder1$cbxStatusNeSteje"] = "on"
 
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/IzostankiUcenec.aspx")
         data.update(get_tags(g.text))
