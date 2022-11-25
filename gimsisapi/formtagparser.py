@@ -189,24 +189,31 @@ def get_gradings(text):
 
 def get_grades(text):
     soup = BeautifulSoup(text, "html.parser")
-    gradings = []
+    gradings = {"subjects": [], "average": 0.0}
     table = soup.find("table", {"class": "tabelaUrnik"})
     if not table:
         return {}
+    all_grades = 0.0
+    all_grades_count = 0
     for i in table.find("tbody").find_all("tr"):
         subject = i.find("th")
         f = i.find_all("td")
         subject_grades = {
             "name": subject.find("b").text.strip(),
             "average": 0.0,
-            0: {"average": 0.0, "grades": []},
-            1: {"average": 0.0, "grades": []},
-            2: {"average": 0.0, "grades": []},
-            3: {"average": 0.0, "grades": []},
+            "perm_average": 0.0,
+            0: {"average": 0.0, "perm_average": 0.0, "grades": []},
+            1: {"average": 0.0, "perm_average": 0.0, "grades": []},
+            2: {"average": 0.0, "perm_average": 0.0, "grades": []},
+            3: {"average": 0.0, "perm_average": 0.0, "grades": []},
         }
         total_all = 0
+        total_all_perm = 0
+        total_all_perm_count = 0
         for k, n in enumerate(f):
             total = 0
+            total_perm = 0
+            total_perm_count = 0
             for g in n.find_all("div"):
                 grade = g.find("span").find("span").find("span")
                 title = grade["title"].strip().splitlines()
@@ -216,6 +223,7 @@ def get_grades(text):
                 ocenjevanje = title[3].replace("Ocenjevanje: ", "").strip()
                 vrsta = title[4].replace("Vrsta: ", "").strip()
                 rok = title[5].replace("Rok: ", "").strip()
+                stalna = "ocVmesna" not in grade["class"]
                 g = grade.text.strip()
                 subject_grades[k]["grades"].append(
                     Grade(
@@ -226,16 +234,29 @@ def get_grades(text):
                         ocenjevanje,
                         vrsta,
                         rok,
-                        "ocVmesna" not in grade["class"],
+                        stalna,
                     ),
                 )
                 total += int(g)
+                if stalna:
+                    total_perm += int(g)
+                    total_perm_count += 1
             total_len = len(subject_grades[k]["grades"])
             if total_len != 0:
                 subject_grades[k]["average"] = total/total_len
+            if total_perm_count != 0:
+                subject_grades[k]["perm_average"] = total_perm/total_perm_count
             total_all += total
+            total_all_perm += total_perm
+            total_all_perm_count += total_perm_count
         full_total_len = len(subject_grades[0]["grades"]) + len(subject_grades[1]["grades"]) + len(subject_grades[2]["grades"]) + len(subject_grades[3]["grades"])
         if full_total_len != 0:
             subject_grades["average"] = total_all/full_total_len
-        gradings.append(subject_grades)
+        if total_all_perm_count != 0:
+            subject_grades["perm_average"] = total_all_perm/total_all_perm_count
+            all_grades += subject_grades["perm_average"]
+            all_grades_count += 1
+        gradings["subjects"].append(subject_grades)
+    if all_grades_count != 0:
+        gradings["average"] = all_grades / all_grades_count
     return gradings
