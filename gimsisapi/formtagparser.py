@@ -215,32 +215,33 @@ def get_grades(text):
             total_perm = 0
             total_perm_count = 0
             for g in n.find_all("div"):
-                grade = g.find("span").find("span").find("span")
-                title = grade["title"].strip().splitlines()
-                datum = title[0].replace("Ocena: ", "").strip()
-                ucitelj = title[1].replace("Učitelj: ", "").strip()
-                predmet = title[2].replace("Predmet: ", "").strip()
-                ocenjevanje = title[3].replace("Ocenjevanje: ", "").strip()
-                vrsta = title[4].replace("Vrsta: ", "").strip()
-                rok = title[5].replace("Rok: ", "").strip()
-                stalna = "ocVmesna" not in grade["class"]
-                g = grade.text.strip()
-                subject_grades[k]["grades"].append(
-                    Grade(
-                        g,
-                        datum,
-                        ucitelj,
-                        predmet,
-                        ocenjevanje,
-                        vrsta,
-                        rok,
-                        stalna,
-                    ),
-                )
-                total += int(g)
-                if stalna:
-                    total_perm += int(g)
-                    total_perm_count += 1
+                grades = g.find("span").find("span").find_all("span")
+                for grade in grades:
+                    title = grade["title"].strip().splitlines()
+                    datum = title[0].replace("Ocena: ", "").strip()
+                    ucitelj = title[1].replace("Učitelj: ", "").strip()
+                    predmet = title[2].replace("Predmet: ", "").strip()
+                    ocenjevanje = title[3].replace("Ocenjevanje: ", "").strip()
+                    vrsta = title[4].replace("Vrsta: ", "").strip()
+                    rok = title[5].replace("Rok: ", "").strip()
+                    stalna = "ocVmesna" not in grade["class"]
+                    g = grade.text.strip()
+                    subject_grades[k]["grades"].append(
+                        Grade(
+                            g,
+                            datum,
+                            ucitelj,
+                            predmet,
+                            ocenjevanje,
+                            vrsta,
+                            rok,
+                            stalna,
+                        ),
+                    )
+                    total += int(g)
+                    if stalna:
+                        total_perm += int(g)
+                        total_perm_count += 1
             total_len = len(subject_grades[k]["grades"])
             if total_len != 0:
                 subject_grades[k]["average"] = total/total_len
