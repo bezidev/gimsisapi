@@ -175,7 +175,10 @@ def get_absences(text, type: int):
 def get_gradings(text):
     soup = BeautifulSoup(text, "html.parser")
     gradings = []
-    for i in soup.find("table", id="ctl00_ContentPlaceHolder1_gvwUcenecIzpiti").find("tbody").find_all("tr"):
+    table = soup.find("table", id="ctl00_ContentPlaceHolder1_gvwUcenecIzpiti")
+    if table is None:
+        return gradings
+    for i in table.find("tbody").find_all("tr"):
         f = i.find_all("td")
         gradings.append(
             Grading(
