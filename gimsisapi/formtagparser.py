@@ -92,7 +92,7 @@ class Grade:
         return self.__str__()
 
     def __str__(self):
-        return f"Grading({self.datum}, {self.ucitelj}, {self.predmet}, {self.tip}, {self.opis_ocenjevanja}, {self.rok}, {self.je_zakljucena})"
+        return f"Grade({self.ocena}, {self.datum}, {self.ucitelj}, {self.predmet}, {self.tip}, {self.opis_ocenjevanja}, {self.rok}, {self.je_zakljucena})"
 
 
 def get_class(text):

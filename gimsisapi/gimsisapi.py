@@ -1,4 +1,7 @@
 from datetime import datetime
+
+from bs4 import BeautifulSoup
+
 from gimsisapi.constants import AbsenceType
 
 import httpx
@@ -36,13 +39,18 @@ class GimSisAPI:
             self,
             from_date: str,
             to_date: str = datetime.now().strftime("%d.%m.%Y"),
-            solsko_leto: str = str(datetime.now().year),
+            solsko_leto: str = None,
             ni_obdelano: bool = True,
             opraviceno: bool = True,
             neopraviceno: bool = True,
             ne_steje: bool = True,
             type: int = AbsenceType.by_subjects,
     ):
+        if solsko_leto is None:
+            solsko_leto = datetime.now().year
+            if datetime.now().month < 9:
+                solsko_leto -= 1
+
         data = {
             "ctl00$ContentPlaceHolder1$ddlIdSolskoleto": solsko_leto,
             "ctl00$ContentPlaceHolder1$edtDatZacetka": from_date,
@@ -61,6 +69,8 @@ class GimSisAPI:
 
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/IzostankiUcenec.aspx")
         data.update(get_tags(g.text))
+
+        #print(data)
 
         r = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/IzostankiUcenec.aspx", data=data)
         return get_absences(r.text, type)
@@ -81,6 +91,27 @@ class GimSisAPI:
         # print(data)
 
         r = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/DnevnikUcenec.aspx", data=data)
+        classes = get_class(r.text)
+        days = get_days(r.text)
+
+        return classes, days
+
+    async def fetch_applications(self):
+        data = {}
+
+        g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/Prijave.aspx")
+        data = get_tags(g.text)
+
+        soup = BeautifulSoup(g.text, "html.parser")
+        table = soup.find(id="ctl00_ContentPlaceHolder1_gvPrijave")
+        if table is None:
+            return []
+
+        table = len(table.find("tbody").find_all("tr"))
+        if table == 0:
+            return []
+
+        r = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/Prijave.aspx", data=data)
         classes = get_class(r.text)
         days = get_days(r.text)
 
