@@ -301,10 +301,16 @@ def get_grades(text):
         full_total_len = len(subject_grades[0]["grades"]) + len(subject_grades[1]["grades"]) + len(subject_grades[2]["grades"]) + len(subject_grades[3]["grades"])
         if full_total_len != 0:
             subject_grades["average"] = total_all/full_total_len
+
         if total_all_perm_count != 0:
-            subject_grades["perm_average"] = total_all_perm/total_all_perm_count
+            subject_grades["perm_average"] = total_all_perm / total_all_perm_count
+        if subject_grades["final"] is None and total_all_perm_count != 0:
             all_grades += subject_grades["perm_average"]
             all_grades_count += 1
+        elif subject_grades["final"] is not None:
+            all_grades += int(subject_grades["final"])
+            all_grades_count += 1
+
         gradings["subjects"].append(subject_grades)
     if all_grades_count != 0:
         gradings["average"] = all_grades / all_grades_count
