@@ -133,6 +133,24 @@ def get_days(text):
     return days
 
 
+def get_profile(text):
+    soup = BeautifulSoup(text, "html.parser")
+    up_ime = soup.find("span", id="ctl00_ContentPlaceHolder1_lblIdUporabnik").text.strip()
+    tip = soup.find("span", id="ctl00_ContentPlaceHolder1_lblVrstaUporabnika").text.strip()
+    ime = soup.find("span", id="ctl00_ContentPlaceHolder1_lblIme").text.strip()
+    priimek = soup.find("span", id="ctl00_ContentPlaceHolder1_lblPriimek").text.strip()
+    spol = soup.find("span", id="ctl00_ContentPlaceHolder1_lblSpol").text.strip()
+    email = soup.find("span", id="ctl00_ContentPlaceHolder1_lblEPosta").text.strip()
+    return {
+        "username": up_ime,
+        "user_role": tip,
+        "name": ime,
+        "surname": priimek,
+        "sex": spol,
+        "email": email,
+    }
+
+
 def get_absences(text, type: int):
     soup = BeautifulSoup(text, "html.parser")
     absences = []
