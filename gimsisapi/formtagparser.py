@@ -96,6 +96,21 @@ class Grade:
         return f"Grade({self.ocena}, {self.datum}, {self.ucitelj}, {self.predmet}, {self.tip}, {self.opis_ocenjevanja}, {self.rok}, {self.je_zakljucena}, {self.popravljane_ocene})"
 
 
+class Teacher:
+    def __init__(self, ime: str, lahko_pise: bool, predmeti: List[str], govorilna_ura: str):
+        self.ime = ime
+        self.lahko_pise = lahko_pise
+        self.predmeti = predmeti
+        self.govorilna_ura = govorilna_ura
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"Teacher({self.ime}, {self.lahko_pise}, {self.predmeti}, {self.govorilna_ura})"
+
+
+
 def get_class(text):
     soup = BeautifulSoup(text, "html.parser")
     m = {0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}}
@@ -207,6 +222,28 @@ def get_gradings(text):
             ),
         )
     return gradings
+
+
+def get_teachers(text):
+    soup = BeautifulSoup(text, "html.parser")
+    teachers = []
+    table = soup.find("table", id="ctl00_ContentPlaceHolder1_gvwUcitelji")
+    if table is None:
+        return teachers
+    for i in table.find("tbody").find_all("tr"):
+        f = i.find_all("td")
+        name = f[0].find("br") or f[0]
+        name = name.text.strip()
+        subjects = f[2].find_all(recursive=False, text=True)
+        teachers.append(
+            Teacher(
+                name,
+                f[1].find("a") is not None,
+                subjects,
+                f[3].text.strip(),
+            ),
+        )
+    return teachers
 
 
 def get_grades(text):

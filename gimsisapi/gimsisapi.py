@@ -6,7 +6,8 @@ from gimsisapi.constants import AbsenceType
 
 import httpx
 
-from gimsisapi.formtagparser import get_class, get_days, get_gradings, get_tags, get_absences, get_grades, get_profile
+from gimsisapi.formtagparser import get_class, get_days, get_gradings, get_tags, get_absences, get_grades, get_profile, \
+    get_teachers
 
 ZGIMSIS_URI = "https://zgimsis.gimb.org/"
 
@@ -124,6 +125,10 @@ class GimSisAPI:
     async def my_profile(self):
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Uporabnik/Profil.aspx")
         return get_profile(g.text)
+
+    async def fetch_teachers(self):
+        g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/UciteljskiZbor.aspx")
+        return get_teachers(g.text)
 
     async def fetch_grades(self):
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/OceneUcenec.aspx")

@@ -18,7 +18,9 @@ async def main():
     # print(gradings)
     # grades = await gimsis.fetch_grades()
     # print(grades)
-    profile = await gimsis.my_profile()
-    print(profile)
+    # profile = await gimsis.my_profile()
+    # print(profile)
+    teachers = await gimsis.fetch_teachers()
+    print(teachers)
 
 asyncio.run(main())
