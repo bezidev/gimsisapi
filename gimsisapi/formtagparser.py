@@ -234,7 +234,14 @@ def get_teachers(text):
         f = i.find_all("td")
         name = f[0].find("br") or f[0]
         name = name.text.strip()
-        subjects = f[2].find_all(recursive=False, text=True)
+        subjects = f[2].find_all(recursive=True, text=True)
+        teacher_at = -1
+        for n, teacher in enumerate(teachers):
+            if teacher.ime == name:
+                teacher_at = n
+                break
+        if teacher_at != -1:
+            teachers[teacher_at].predmeti.extend(subjects)
         teachers.append(
             Teacher(
                 name,
