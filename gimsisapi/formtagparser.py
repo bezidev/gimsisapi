@@ -242,6 +242,7 @@ def get_teachers(text):
                 break
         if teacher_at != -1:
             teachers[teacher_at].predmeti.extend(subjects)
+            continue
         teachers.append(
             Teacher(
                 name,
