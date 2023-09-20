@@ -29,10 +29,10 @@ class GimSisAPI:
         g = await self.client.get(f"{ZGIMSIS_URI}Logon.aspx")
         data.update(get_tags(g.text))
 
-        await self.client.post(f"{ZGIMSIS_URI}Logon.aspx", data=data)
+        r = await self.client.post(f"{ZGIMSIS_URI}Logon.aspx", data=data)
 
         if self.client.cookies.get(".ASPXFORMSAUTH") is None:
-            raise Exception("Failed while logging in")
+            raise Exception(f"Failed while logging in. {r.status_code} {r.text}")
 
         await self.client.get(f"{ZGIMSIS_URI}Default.aspx")
 
