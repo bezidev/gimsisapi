@@ -130,7 +130,14 @@ def get_class(text):
         profesor = title[3]
         ucilnica = title[4]
 
-        m[dan][ura] = GimSisUra(ura, dan, ime, kratko_ime, razred, profesor, ucilnica, dnevniski_zapis, vpisano_nadomescanje)
+        gu = GimSisUra(ura, dan, ime, kratko_ime, razred, profesor, ucilnica, dnevniski_zapis, vpisano_nadomescanje)
+
+        if m[dan].get(ura) is None:
+            m[dan][ura] = gu
+            continue
+
+        if dnevniski_zapis:
+            m[dan][ura] = gu
 
     return m
 

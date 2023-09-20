@@ -98,8 +98,6 @@ class GimSisAPI:
         return classes, days
 
     async def fetch_applications(self):
-        data = {}
-
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/Prijave.aspx")
         data = get_tags(g.text)
 
