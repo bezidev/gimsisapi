@@ -128,6 +128,14 @@ class GimSisAPI:
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/UciteljskiZbor.aspx")
         return get_teachers(g.text)
 
-    async def fetch_grades(self):
+    async def fetch_grades(self, year: str = ""):
         g = await self.client.get(f"{ZGIMSIS_URI}Page_Gim/Ucenec/OceneUcenec.aspx")
+        if year == "":
+            return get_grades(g.text)
+
+        data = get_tags(g.text)
+        data["ctl00$ContentPlaceHolder1$ddlIdSolskoleto"] = year
+
+        g = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/OceneUcenec.aspx", data=data)
         return get_grades(g.text)
+
