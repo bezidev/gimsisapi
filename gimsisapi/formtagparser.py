@@ -262,6 +262,7 @@ def get_teachers(text):
 
 
 def get_grades(text):
+    #print(text)
     soup = BeautifulSoup(text, "html.parser")
     gradings = {"subjects": [], "average": 0.0}
     table = soup.find("table", {"class": "tabelaUrnik"})
@@ -384,4 +385,9 @@ def get_grades(text):
         gradings["subjects"].append(subject_grades)
     if all_grades_count != 0:
         gradings["average"] = all_grades / all_grades_count
-    return gradings
+
+    school_years = []
+    for i in soup.find("select", id="ctl00_ContentPlaceHolder1_ddlIdSolskoleto").find_all("option"):
+        school_years.append({"text": i.text, "value": i["value"], "selected": i.get("selected") is not None})
+
+    return gradings, school_years
