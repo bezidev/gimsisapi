@@ -199,10 +199,16 @@ def get_absences(text, type: int):
                 current_day = f[0].text.strip()
                 days[current_day] = []
                 f = f[1:]
-            
+
+            u = f[0].text.strip()
+            if "P" in u:
+                ura = 7 + int(u.replace("P", ""))
+            else:
+                ura = int(u)
+
             days[current_day].append(
                 SubjectAbsenceStatus(
-                    int(f[0].text.strip()),
+                    ura,
                     f[1].text.strip(),
                     f[2].text.strip(),
                     f[3].find("div").text.strip(),
