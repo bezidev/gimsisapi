@@ -177,7 +177,10 @@ def get_absences(text, type: int):
     soup = BeautifulSoup(text, "html.parser")
     absences = []
     if type == AbsenceType.by_subjects:
-        for i in soup.find("table", id="ctl00_ContentPlaceHolder1_gvwPregledIzostankovPredmeti").find("tbody").find_all("tr"):
+        n = soup.find("table", id="ctl00_ContentPlaceHolder1_gvwPregledIzostankovPredmeti")
+        if n is None:
+            return absences
+        for i in n.find("tbody").find_all("tr"):
             f = i.find_all("td")
             absences.append(
                 SubjectAbsence(
@@ -193,7 +196,10 @@ def get_absences(text, type: int):
     elif type == AbsenceType.by_days:
         current_day = ""
         days = {}
-        for i in soup.find("table", id="ctl00_ContentPlaceHolder1_gvwPregledIzostankov").find("tbody").find_all("tr"):
+        n = soup.find("table", id="ctl00_ContentPlaceHolder1_gvwPregledIzostankov")
+        if n is None:
+            return days
+        for i in n.find("tbody").find_all("tr"):
             f = i.find_all("td")
             if re.match(r"(.*)\.(.*)\.(.*)", f[0].text.strip()) is not None:
                 current_day = f[0].text.strip()
