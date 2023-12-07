@@ -282,6 +282,8 @@ def get_grades(text):
         return {}
     all_grades = 0.0
     all_grades_count = 0
+    all_nc_grades = 0.0
+    all_nc_grades_count = 0
     for i in table.find("tbody").find_all("tr"):
         subject = i.find("th")
         f = i.find_all("td")
@@ -390,13 +392,19 @@ def get_grades(text):
         if subject_grades["final"] is None and total_all_perm_count != 0:
             all_grades += subject_grades["perm_average"]
             all_grades_count += 1
+            all_nc_grades += subject_grades["average"]
+            all_nc_grades_count += 1
         elif subject_grades["final"] is not None:
             all_grades += int(subject_grades["final"])
             all_grades_count += 1
+            all_nc_grades += int(subject_grades["final"])
+            all_nc_grades_count += 1
 
         gradings["subjects"].append(subject_grades)
     if all_grades_count != 0:
-        gradings["average"] = all_grades / all_grades_count
+        gradings["average_perm"] = all_grades / all_grades_count
+    if all_nc_grades_count != 0:
+        gradings["average"] = all_nc_grades / all_nc_grades_count
 
     school_years = []
     for i in soup.find("select", id="ctl00_ContentPlaceHolder1_ddlIdSolskoleto").find_all("option"):
