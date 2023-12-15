@@ -308,7 +308,7 @@ def get_grades(text):
                 grades = g.find("span").find("span").find_all("span")
                 if len(grades) > 1:
                     grade_nonprimary = []
-                    grade_primary = None
+                    grade_primary = []
                     for grade in grades:
                         stalna = "ocVmesna" not in grade["class"]
                         title = grade["title"].strip().splitlines()
@@ -332,16 +332,20 @@ def get_grades(text):
                         if not stalna:
                             grade_nonprimary.append(current_grade)
                             continue
-                        grade_primary = current_grade
+                        grade_primary.append(current_grade)
                         total_perm += int(g)
                         total_perm_count += 1
                         total += int(g)
-                    if grade_primary is not None:
-                        grade_primary.popravljane_ocene = grade_nonprimary
-                        subject_grades[oc_obdobje]["grades"].append(grade_primary)
-                    else:
-                        for grade_non in grade_nonprimary:
-                            subject_grades[oc_obdobje]["grades"].append(grade_non)
+
+                    if len(grade_primary) > 0:
+                        for grade in grade_primary:
+                            grade.popravljane_ocene = grade_nonprimary
+                            subject_grades[oc_obdobje]["grades"].append(grade)
+                        continue
+
+                    for grade_non in grade_nonprimary:
+                        subject_grades[oc_obdobje]["grades"].append(grade_non)
+
                     continue
 
                 if len(grades) == 0:

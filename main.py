@@ -16,7 +16,7 @@ async def main():
     #print(absences)
     # gradings = await gimsis.fetch_gradings()
     # print(gradings)
-    grades = await gimsis.fetch_grades(year="2023")
+    grades = await gimsis.fetch_grades(year="2022")
     print(grades)
     #profile = await gimsis.my_profile()
     #print(profile)
