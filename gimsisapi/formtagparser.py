@@ -384,11 +384,11 @@ def get_grades(text):
             if total_len != 0:
                 subject_grades[oc_obdobje]["average"] = total/total_len
                 if subject_grades[oc_obdobje]["average"] > 5:
-                    print(f"[GIMSIS] Preseženo povprečje 5 ({subject_grades[oc_obdobje]["average"]}): {text}")
+                    print(f"[GIMSIS] Preseženo povprečje 5 ({subject_grades[oc_obdobje]['average']}): {text}")
             if total_perm_count != 0:
                 subject_grades[oc_obdobje]["perm_average"] = total_perm/total_perm_count
                 if subject_grades[oc_obdobje]["average"] > 5:
-                    print(f"[GIMSIS] Preseženo stalno povprečje 5 ({subject_grades[oc_obdobje]["perm_average"]}): {text}")
+                    print(f"[GIMSIS] Preseženo stalno povprečje 5 ({subject_grades[oc_obdobje]['perm_average']}): {text}")
             total_all += total
             total_all_perm += total_perm
             total_all_perm_count += total_perm_count
