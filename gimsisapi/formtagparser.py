@@ -286,7 +286,7 @@ def get_grades(text):
     all_nc_grades_count = 0
     for i in table.find("tbody").find_all("tr"):
         subject = i.find("th")
-        f = i.find_all("td")
+        oc_obdobja = i.find_all("td")
         subject_grades = {
             "name": subject.find("b").text.strip(),
             "average": 0.0,
@@ -300,7 +300,7 @@ def get_grades(text):
         total_all = 0
         total_all_perm = 0
         total_all_perm_count = 0
-        for k, n in enumerate(f):
+        for oc_obdobje, n in enumerate(oc_obdobja):
             total = 0
             total_perm = 0
             total_perm_count = 0
@@ -338,48 +338,57 @@ def get_grades(text):
                         total += int(g)
                     if grade_primary is not None:
                         grade_primary.popravljane_ocene = grade_nonprimary
-                        subject_grades[k]["grades"].append(grade_primary)
+                        subject_grades[oc_obdobje]["grades"].append(grade_primary)
                     else:
                         for grade_non in grade_nonprimary:
-                            subject_grades[k]["grades"].append(grade_non)
-                else:
-                    for grade in grades:
-                        koncna = "ocUgotovitev" in grade["class"]
-                        if koncna:
-                            title = grade["title"].strip().splitlines()
-                            g = grade.text.strip()
-                            subject_grades["final"] = int(g)
-                        else:
-                            title = grade["title"].strip().splitlines()
-                            datum = title[0].replace("Ocena: ", "").strip()
-                            ucitelj = title[1].replace("Učitelj: ", "").strip()
-                            predmet = title[2].replace("Predmet: ", "").strip()
-                            ocenjevanje = title[3].replace("Ocenjevanje: ", "").strip()
-                            vrsta = title[4].replace("Vrsta: ", "").strip()
-                            rok = title[5].replace("Rok: ", "").strip()
-                            stalna = "ocVmesna" not in grade["class"]
-                            g = grade.text.strip()
-                            subject_grades[k]["grades"].append(
-                                Grade(
-                                    g,
-                                    datum,
-                                    ucitelj,
-                                    predmet,
-                                    ocenjevanje,
-                                    vrsta,
-                                    rok,
-                                    stalna,
-                                ),
-                            )
-                            total += int(g)
-                            if stalna:
-                                total_perm += int(g)
-                                total_perm_count += 1
-            total_len = len(subject_grades[k]["grades"])
+                            subject_grades[oc_obdobje]["grades"].append(grade_non)
+                    continue
+
+                if len(grades) == 0:
+                    continue
+
+                # Če len(grades) == 1
+                grade = grades[0]
+                koncna = "ocUgotovitev" in grade["class"]
+                title = grade["title"].strip().splitlines()
+                if koncna:
+                    g = grade.text.strip()
+                    subject_grades["final"] = int(g)
+                    continue
+
+                datum = title[0].replace("Ocena: ", "").strip()
+                ucitelj = title[1].replace("Učitelj: ", "").strip()
+                predmet = title[2].replace("Predmet: ", "").strip()
+                ocenjevanje = title[3].replace("Ocenjevanje: ", "").strip()
+                vrsta = title[4].replace("Vrsta: ", "").strip()
+                rok = title[5].replace("Rok: ", "").strip()
+                stalna = "ocVmesna" not in grade["class"]
+                g = grade.text.strip()
+                subject_grades[oc_obdobje]["grades"].append(
+                    Grade(
+                        g,
+                        datum,
+                        ucitelj,
+                        predmet,
+                        ocenjevanje,
+                        vrsta,
+                        rok,
+                        stalna,
+                    ),
+                )
+                total += int(g)
+                if stalna:
+                    total_perm += int(g)
+                    total_perm_count += 1
+            total_len = len(subject_grades[oc_obdobje]["grades"])
             if total_len != 0:
-                subject_grades[k]["average"] = total/total_len
+                subject_grades[oc_obdobje]["average"] = total/total_len
+                if subject_grades[oc_obdobje]["average"] > 5:
+                    print(f"[GIMSIS] Preseženo povprečje 5 ({subject_grades[oc_obdobje]["average"]}): {text}")
             if total_perm_count != 0:
-                subject_grades[k]["perm_average"] = total_perm/total_perm_count
+                subject_grades[oc_obdobje]["perm_average"] = total_perm/total_perm_count
+                if subject_grades[oc_obdobje]["average"] > 5:
+                    print(f"[GIMSIS] Preseženo stalno povprečje 5 ({subject_grades[oc_obdobje]["perm_average"]}): {text}")
             total_all += total
             total_all_perm += total_perm
             total_all_perm_count += total_perm_count
