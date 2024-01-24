@@ -333,9 +333,12 @@ def get_grades(text):
                             grade_nonprimary.append(current_grade)
                             continue
                         grade_primary.append(current_grade)
-                        total_perm += int(g)
-                        total_perm_count += 1
-                        total += int(g)
+                        try:
+                            total_perm += int(g)
+                            total_perm_count += 1
+                            total += int(g)
+                        except Exception as e:
+                            print(f"[GIMSIS FAILURE] Failure while parsing one of the grades: {e} {text}")
 
                     if len(grade_primary) > 0:
                         for grade in grade_primary:
@@ -357,7 +360,10 @@ def get_grades(text):
                 title = grade["title"].strip().splitlines()
                 if koncna:
                     g = grade.text.strip()
-                    subject_grades["final"] = int(g)
+                    try:
+                        subject_grades["final"] = int(g)
+                    except Exception as e:
+                        print(f"[GIMSIS FAILURE] Failure while parsing finalized grade: {e} {text}")
                     continue
 
                 datum = title[0].replace("Ocena: ", "").strip()
@@ -380,10 +386,13 @@ def get_grades(text):
                         stalna,
                     ),
                 )
-                total += int(g)
-                if stalna:
-                    total_perm += int(g)
-                    total_perm_count += 1
+                try:
+                    total += int(g)
+                    if stalna:
+                        total_perm += int(g)
+                        total_perm_count += 1
+                except Exception as e:
+                    print(f"[GIMSIS FAILURE] Failure while parsing a grade: {e} {text}")
             total_len = len(subject_grades[oc_obdobje]["grades"])
             if total_len != 0:
                 subject_grades[oc_obdobje]["average"] = total/total_len
