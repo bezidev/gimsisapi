@@ -78,7 +78,8 @@ class Grading:
 
 
 class Grade:
-    def __init__(self, ocena: str, datum: str, ucitelj: str, predmet: str, tip: str, opis_ocenjevanja: str, rok: str, je_zakljucena: bool):
+    def __init__(self, ocena: str, datum: str, ucitelj: str, predmet: str, tip: str, opis_ocenjevanja: str, rok: str,
+                 je_zakljucena: bool):
         self.ocena = ocena
         self.datum = datum
         self.ucitelj = ucitelj
@@ -108,7 +109,6 @@ class Teacher:
 
     def __str__(self):
         return f"Teacher({self.ime}, {self.lahko_pise}, {self.predmeti}, {self.govorilna_ura})"
-
 
 
 def get_class(text):
@@ -274,7 +274,7 @@ def get_teachers(text):
 
 
 def get_grades(text):
-    #print(text)
+    # print(text)
     soup = BeautifulSoup(text, "html.parser")
     gradings = {"subjects": [], "average": 0.0}
     table = soup.find("table", {"class": "tabelaUrnik"})
@@ -291,10 +291,10 @@ def get_grades(text):
             "name": subject.find("b").text.strip(),
             "average": 0.0,
             "perm_average": 0.0,
-            0: {"average": 0.0, "perm_average": 0.0, "grades": []},
-            1: {"average": 0.0, "perm_average": 0.0, "grades": []},
-            2: {"average": 0.0, "perm_average": 0.0, "grades": []},
-            3: {"average": 0.0, "perm_average": 0.0, "grades": []},
+            0: {"average": 0.0, "perm_average": 0.0, "grades": [], "final": ""},
+            1: {"average": 0.0, "perm_average": 0.0, "grades": [], "final": ""},
+            2: {"average": 0.0, "perm_average": 0.0, "grades": [], "final": ""},
+            3: {"average": 0.0, "perm_average": 0.0, "grades": [], "final": ""},
             "final": None,
         }
         total_all = 0
@@ -360,8 +360,14 @@ def get_grades(text):
                 title = grade["title"].strip().splitlines()
                 if koncna:
                     g = grade.text.strip()
+                    if g == "C":
+                        # neoCenjen (??????)
+                        subject_grades[oc_obdobje]["final"] = "NOC"
+                        continue
                     try:
-                        subject_grades["final"] = int(g)
+                        if oc_obdobje == 1:
+                            subject_grades["final"] = int(g)
+                        subject_grades[oc_obdobje]["final"] = int(g)
                     except Exception as e:
                         print(f"[GIMSIS FAILURE] Failure while parsing finalized grade: {e} {text}")
                     continue
@@ -395,19 +401,21 @@ def get_grades(text):
                     print(f"[GIMSIS FAILURE] Failure while parsing a grade: {e} {text}")
             total_len = len(subject_grades[oc_obdobje]["grades"])
             if total_len != 0:
-                subject_grades[oc_obdobje]["average"] = total/total_len
+                subject_grades[oc_obdobje]["average"] = total / total_len
                 if subject_grades[oc_obdobje]["average"] > 5:
                     print(f"[GIMSIS] Preseženo povprečje 5 ({subject_grades[oc_obdobje]['average']}): {text}")
             if total_perm_count != 0:
-                subject_grades[oc_obdobje]["perm_average"] = total_perm/total_perm_count
+                subject_grades[oc_obdobje]["perm_average"] = total_perm / total_perm_count
                 if subject_grades[oc_obdobje]["average"] > 5:
-                    print(f"[GIMSIS] Preseženo stalno povprečje 5 ({subject_grades[oc_obdobje]['perm_average']}): {text}")
+                    print(
+                        f"[GIMSIS] Preseženo stalno povprečje 5 ({subject_grades[oc_obdobje]['perm_average']}): {text}")
             total_all += total
             total_all_perm += total_perm
             total_all_perm_count += total_perm_count
-        full_total_len = len(subject_grades[0]["grades"]) + len(subject_grades[1]["grades"]) + len(subject_grades[2]["grades"]) + len(subject_grades[3]["grades"])
+        full_total_len = len(subject_grades[0]["grades"]) + len(subject_grades[1]["grades"]) + len(
+            subject_grades[2]["grades"]) + len(subject_grades[3]["grades"])
         if full_total_len != 0:
-            subject_grades["average"] = total_all/full_total_len
+            subject_grades["average"] = total_all / full_total_len
 
         if total_all_perm_count != 0:
             subject_grades["perm_average"] = total_all_perm / total_all_perm_count
