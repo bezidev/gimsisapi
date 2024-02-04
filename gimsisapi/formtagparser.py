@@ -367,6 +367,7 @@ def get_grades(text):
                     elif g == "G":
                         # neGativno (????????????)
                         subject_grades[oc_obdobje]["final"] = 1
+                        continue
                     try:
                         if oc_obdobje == 1:
                             subject_grades["final"] = int(g)
