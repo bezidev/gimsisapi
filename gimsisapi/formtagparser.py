@@ -364,6 +364,9 @@ def get_grades(text):
                         # neoCenjen (??????)
                         subject_grades[oc_obdobje]["final"] = "NOC"
                         continue
+                    elif g == "G":
+                        # neGativno (????????????)
+                        subject_grades[oc_obdobje]["final"] = 1
                     try:
                         if oc_obdobje == 1:
                             subject_grades["final"] = int(g)
