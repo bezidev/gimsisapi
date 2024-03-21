@@ -340,12 +340,28 @@ def get_grades(text):
                         except Exception as e:
                             print(f"[GIMSIS FAILURE] Failure while parsing one of the grades: {e} {text}")
 
+                    # Profesorica ni kliknila na "Zaključi" pri dveh rokih,
+                    # posledično sta obe oceni označeni kot nestalni, kar zmede
+                    # sistem.
+                    #
+                    # Zato uporabimo najboljšo oceno kot popravljeno
+                    if len(grade_primary) == 0 and len(grade_nonprimary) >= 2:
+                        best_grade = grade_nonprimary[0]
+                        for grade_non in grade_nonprimary:
+                            if grade_non.ocena > best_grade.ocena:
+                                best_grade = grade_non
+                        grade_nonprimary.remove(best_grade)
+                        best_grade.je_zakljucena = True
+                        grade_primary.append(best_grade)
+
                     if len(grade_primary) > 0:
                         for grade in grade_primary:
                             grade.popravljane_ocene = grade_nonprimary
                             subject_grades[oc_obdobje]["grades"].append(grade)
                         continue
 
+                    # Ne bi vedel, če se ta del sploh še požene.
+                    # Bom pustil tukaj za vsak slučaj.
                     for grade_non in grade_nonprimary:
                         subject_grades[oc_obdobje]["grades"].append(grade_non)
 
