@@ -353,6 +353,12 @@ def get_grades(text):
                         grade_nonprimary.remove(best_grade)
                         best_grade.je_zakljucena = True
                         grade_primary.append(best_grade)
+                        try:
+                            total_perm += int(best_grade.ocena)
+                            total_perm_count += 1
+                            total += int(best_grade.ocena)
+                        except Exception as e:
+                            print(f"[GIMSIS FAILURE] Failure while parsing one of the grades whilst applying patch#1: {e} {text}")
 
                     if len(grade_primary) > 0:
                         for grade in grade_primary:
