@@ -133,11 +133,22 @@ class GimSisAPI:
         if year == "":
             grades, school_years = get_grades(g.text)
             return {"grades": grades, "school_years": school_years}
+        
+        if year == "2023":
+            data = get_tags(g.text)
+            data["ctl00$ContentPlaceHolder1$ddlIdSolskoleto"] = "2022"
+            g = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/OceneUcenec.aspx", data=data)
+            data = get_tags(g.text)
+            data["ctl00$ContentPlaceHolder1$ddlIdSolskoleto"] = "2023"
+            g = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/OceneUcenec.aspx", data=data)
+            grades, school_years = get_grades(g.text)
+            return {"grades": grades, "school_years": school_years}
 
         data = get_tags(g.text)
         data["ctl00$ContentPlaceHolder1$ddlIdSolskoleto"] = year
 
         g = await self.client.post(f"{ZGIMSIS_URI}Page_Gim/Ucenec/OceneUcenec.aspx", data=data)
+        #print(g.text)
         grades, school_years = get_grades(g.text)
         return {"grades": grades, "school_years": school_years}
 
